@@ -5,6 +5,47 @@
  */
 public class FibonacciHeap
 {
+    // fields of FibonacciHeap.
+    public HeapNode min;
+    public int treeCount;
+    public int size;
+    public int linkCount;
+    public int cutCount;
+    public int markedCount;
+
+    // FibonacciHeap's constructor.
+    public FibonacciHeap(HeapNode min, int treeCount, int size, int linkCount, int cutCount, int markedCount) {
+        this.min = min;
+        this.treeCount = treeCount;
+        this.size = size;
+        this.linkCount = linkCount;
+        this.cutCount = cutCount;
+        this.markedCount = markedCount;
+    }
+
+    public HeapNode getMin() {
+        return this.min;
+    }
+
+    public int getTreeCount() {
+        return this.treeCount;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public int getLinkCount() {
+        return this.linkCount;
+    }
+
+    public int getCutCount() {
+        return this.cutCount;
+    }
+
+    public int getMarkedCount() {
+        return this.markedCount;
+    }
 
    /**
     * public boolean isEmpty()
@@ -183,6 +224,7 @@ public class FibonacciHeap
     */
     public static class HeapNode{
 
+        // fields of HeapNode.
     	public int key;
         public int rank;
         public boolean mark;
@@ -191,6 +233,7 @@ public class FibonacciHeap
         public HeapNode next;
         public HeapNode prev;
 
+        // HeapNode's
     	public HeapNode(int key, int rank, boolean mark, HeapNode child, HeapNode parent, HeapNode next, HeapNode prev) {
             this.key = key;
             this.rank = rank;
