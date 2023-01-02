@@ -184,13 +184,49 @@ public class FibonacciHeap
     public static class HeapNode{
 
     	public int key;
+        public int rank;
+        public boolean mark;
+        public HeapNode child;
+        public HeapNode parent;
+        public HeapNode next;
+        public HeapNode prev;
 
-    	public HeapNode(int key) {
-    		this.key = key;
+    	public HeapNode(int key, int rank, boolean mark, HeapNode child, HeapNode parent, HeapNode next, HeapNode prev) {
+            this.key = key;
+            this.rank = rank;
+            this.mark = mark;
+            this.child = child;
+            this.parent = parent;
+            this.next = next;
+            this.prev = prev;
     	}
 
     	public int getKey() {
-    		return this.key;
+            return this.key;
     	}
+
+        public int getRank() {
+            return this.rank;
+        }
+
+        public boolean isMarked() {
+            return this.mark;
+        }
+
+        public HeapNode getChild() {
+            return this.child;
+        }
+
+        public HeapNode getParent() {
+            return this.parent;
+        }
+
+        public HeapNode getNext() {
+            return this.next;
+        }
+
+        public  HeapNode getPrev() {
+            return this.prev;
+        }
     }
 }
