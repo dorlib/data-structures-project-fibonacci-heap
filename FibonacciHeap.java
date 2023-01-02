@@ -53,9 +53,8 @@ public class FibonacciHeap
     * Returns true if and only if the heap is empty.
     *   
     */
-    public boolean isEmpty()
-    {
-    	return false; // should be replaced by student code
+    public boolean isEmpty() {
+    	return this.getSize() > 0;
     }
 		
    /**
@@ -66,9 +65,44 @@ public class FibonacciHeap
     * 
     * Returns the newly created node.
     */
-    public HeapNode insert(int key)
-    {    
-    	return new HeapNode(key); // should be replaced by student code
+    public HeapNode insert(int key) {
+        // create new node.
+        HeapNode newNode = this.createNode(key);
+
+        // insert the created node to the heap if the heap is empty.
+        if (this.isEmpty()) {
+            this.min = newNode;
+            return newNode;
+        }
+
+        // insert the created node to the heap if the heap is not empty.
+        this.min.prev = newNode;
+        newNode.prev = this.getMin();
+        newNode.next = this.min.getNext();
+        this.min.next = newNode;
+
+        this.updatePointers(newNode);
+
+        return newNode;
+    }
+
+    private HeapNode createNode(int key) {
+        return new HeapNode(key, 0, false, null, null, null, null);
+    }
+
+    private void heapifyUp() {
+        return; // TODO
+    }
+
+    private void heapifyDown() {
+        return; // TODO
+    }
+
+    private void updatePointers(HeapNode newNode) {
+        // update pointer to min.
+        if (newNode.key< this.min.key) {
+            this.min = newNode;
+        }
     }
 
    /**
