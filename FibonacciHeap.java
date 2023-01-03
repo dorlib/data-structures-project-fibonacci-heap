@@ -7,6 +7,7 @@ public class FibonacciHeap
 {
     // fields of FibonacciHeap.
     public HeapNode min;
+    public HeapNode lastNode;
     public int treeCount;
     public int size;
     public int linkCount;
@@ -14,8 +15,9 @@ public class FibonacciHeap
     public int markedCount;
 
     // FibonacciHeap's constructor.
-    public FibonacciHeap(HeapNode min, int treeCount, int size, int linkCount, int cutCount, int markedCount) {
+    public FibonacciHeap(HeapNode min, HeapNode lastNode, int treeCount, int size, int linkCount, int cutCount, int markedCount) {
         this.min = min;
+        this.lastNode = lastNode;
         this.treeCount = treeCount;
         this.size = size;
         this.linkCount = linkCount;
@@ -66,42 +68,38 @@ public class FibonacciHeap
     * Returns the newly created node.
     */
     public HeapNode insert(int key) {
-        // create new node.
-        HeapNode newNode = this.createNode(key);
-
         // insert the created node to the heap if the heap is empty.
         if (this.isEmpty()) {
+            HeapNode newNode = this.createNode(key, 0, false, null, null, null, null);
+            newNode.next = newNode;
+            newNode.prev = newNode;
+
             this.min = newNode;
-            this.updatePointers(newNode, true);
+            this.lastNode = newNode;
+            this.size = 1;
 
             return newNode;
         }
 
         // insert the created node to the heap if the heap is not empty.
-        this.min.prev = newNode;
-        newNode.prev = this.getMin();
-        newNode.next = this.min.getNext();
-        this.min.next = newNode;
+        HeapNode newNode = this.createNode(key, 0, false, null, null, this.lastNode, this.lastNode.prev);
+        this.lastNode.prev.next = newNode;
+        this.lastNode.prev = newNode;
+        this.lastNode = newNode;
 
-        this.updatePointers(newNode, true);
+        this.updateMin(newNode);
+        this.size++;
 
         return newNode;
     }
 
-    private HeapNode createNode(int key) {
-        return new HeapNode(key, 0, false, null, null, null, null);
+    private HeapNode createNode(int key, int rank, boolean mark, HeapNode child, HeapNode parent, HeapNode next, HeapNode prev) {
+        return new HeapNode(key, rank, mark, child, parent, next, prev);
     }
 
-    private void updatePointers(HeapNode newNode, boolean isInsert) {
-        // update pointer to min.
+    private void updateMin(HeapNode newNode) {
         if (newNode.key< this.min.key) {
             this.min = newNode;
-        }
-
-        if (isInsert) {
-            this.size++;
-        } else {
-            this.size--;
         }
     }
 
