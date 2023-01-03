@@ -5,6 +5,47 @@
  */
 public class FibonacciHeap
 {
+    // fields of FibonacciHeap.
+    public HeapNode min;
+    public int treeCount;
+    public int size;
+    public int linkCount;
+    public int cutCount;
+    public int markedCount;
+
+    // FibonacciHeap's constructor.
+    public FibonacciHeap(HeapNode min, int treeCount, int size, int linkCount, int cutCount, int markedCount) {
+        this.min = min;
+        this.treeCount = treeCount;
+        this.size = size;
+        this.linkCount = linkCount;
+        this.cutCount = cutCount;
+        this.markedCount = markedCount;
+    }
+
+    public HeapNode getMin() {
+        return this.min;
+    }
+
+    public int getTreeCount() {
+        return this.treeCount;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public int getLinkCount() {
+        return this.linkCount;
+    }
+
+    public int getCutCount() {
+        return this.cutCount;
+    }
+
+    public int getMarkedCount() {
+        return this.markedCount;
+    }
 
    /**
     * public boolean isEmpty()
@@ -12,9 +53,8 @@ public class FibonacciHeap
     * Returns true if and only if the heap is empty.
     *   
     */
-    public boolean isEmpty()
-    {
-    	return false; // should be replaced by student code
+    public boolean isEmpty() {
+    	return this.getSize() > 0;
     }
 		
    /**
@@ -25,9 +65,44 @@ public class FibonacciHeap
     * 
     * Returns the newly created node.
     */
-    public HeapNode insert(int key)
-    {    
-    	return new HeapNode(key); // should be replaced by student code
+    public HeapNode insert(int key) {
+        // create new node.
+        HeapNode newNode = this.createNode(key);
+
+        // insert the created node to the heap if the heap is empty.
+        if (this.isEmpty()) {
+            this.min = newNode;
+            this.updatePointers(newNode, true);
+
+            return newNode;
+        }
+
+        // insert the created node to the heap if the heap is not empty.
+        this.min.prev = newNode;
+        newNode.prev = this.getMin();
+        newNode.next = this.min.getNext();
+        this.min.next = newNode;
+
+        this.updatePointers(newNode, true);
+
+        return newNode;
+    }
+
+    private HeapNode createNode(int key) {
+        return new HeapNode(key, 0, false, null, null, null, null);
+    }
+
+    private void updatePointers(HeapNode newNode, boolean isInsert) {
+        // update pointer to min.
+        if (newNode.key< this.min.key) {
+            this.min = newNode;
+        }
+
+        if (isInsert) {
+            this.size++;
+        } else {
+            this.size--;
+        }
     }
 
    /**
@@ -183,14 +258,52 @@ public class FibonacciHeap
     */
     public static class HeapNode{
 
+        // fields of HeapNode.
     	public int key;
+        public int rank;
+        public boolean mark;
+        public HeapNode child;
+        public HeapNode parent;
+        public HeapNode next;
+        public HeapNode prev;
 
-    	public HeapNode(int key) {
-    		this.key = key;
+        // HeapNode's
+    	public HeapNode(int key, int rank, boolean mark, HeapNode child, HeapNode parent, HeapNode next, HeapNode prev) {
+            this.key = key;
+            this.rank = rank;
+            this.mark = mark;
+            this.child = child;
+            this.parent = parent;
+            this.next = next;
+            this.prev = prev;
     	}
 
     	public int getKey() {
-    		return this.key;
+            return this.key;
     	}
+
+        public int getRank() {
+            return this.rank;
+        }
+
+        public boolean isMarked() {
+            return this.mark;
+        }
+
+        public HeapNode getChild() {
+            return this.child;
+        }
+
+        public HeapNode getParent() {
+            return this.parent;
+        }
+
+        public HeapNode getNext() {
+            return this.next;
+        }
+
+        public  HeapNode getPrev() {
+            return this.prev;
+        }
     }
 }
