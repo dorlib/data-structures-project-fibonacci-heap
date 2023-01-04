@@ -1,0 +1,7 @@
+# IDE stuff
+*.iml
+.idea
+
+# compiled files
+out
+*.class
