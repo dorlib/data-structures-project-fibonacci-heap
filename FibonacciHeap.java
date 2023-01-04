@@ -123,7 +123,11 @@ public class FibonacciHeap
     */
     public HeapNode findMin()
     {
-    	return new HeapNode(678);// should be replaced by student code
+    	if (this.isEmpty()) {
+            return null;
+        }
+
+        return this.min;
     } 
     
    /**
