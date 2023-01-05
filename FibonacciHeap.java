@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /**
  * FibonacciHeap
  *
@@ -122,7 +124,7 @@ public class FibonacciHeap
         }
 
         // insert the created node to the heap if the heap is not empty.
-        HeapNode newNode = this.createNode(key, 0, false, null, null, this.lastNode, this.lastNode.prev);
+        HeapNode newNode = this.createNode(key, 0, false, null, null, this.treeListStart, this.treeListStart.prev);
         this.treeListStart.prev.next = newNode;
         this.treeListStart.prev = newNode;
         this.treeListStart = newNode;
