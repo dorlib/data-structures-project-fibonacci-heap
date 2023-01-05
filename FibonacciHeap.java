@@ -319,7 +319,7 @@ public class FibonacciHeap
     * plus twice the number of marked nodes in the heap. 
     */
     public int potential() {
-        return -234; // should be replaced by student code
+        return this.treeCount + (2 * this.markedCount);
     }
 
    /**
