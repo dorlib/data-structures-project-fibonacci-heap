@@ -12,8 +12,8 @@ public class FibonacciHeap
     private HeapNode treeListStart;
     public int treeCount;
     public int size;
-    public int linkCount;
-    public int cutCount;
+    public static int linkCount;
+    public static int cutCount;
     public int markedCount;
 
     /**
@@ -318,8 +318,7 @@ public class FibonacciHeap
     * In words: The potential equals to the number of trees in the heap
     * plus twice the number of marked nodes in the heap. 
     */
-    public int potential() 
-    {    
+    public int potential() {
         return -234; // should be replaced by student code
     }
 
@@ -331,9 +330,8 @@ public class FibonacciHeap
     * trees of the same rank, and generates a tree of rank bigger by one, by hanging the
     * tree which has larger value in its root under the other tree.
     */
-    public static int totalLinks()
-    {    
-    	return -345; // should be replaced by student code
+    public static int totalLinks() {
+        return linkCount;
     }
 
    /**
@@ -343,9 +341,8 @@ public class FibonacciHeap
     * run-time of the program. A cut operation is the operation which disconnects a subtree
     * from its parent (during decreaseKey/delete methods). 
     */
-    public static int totalCuts()
-    {    
-    	return -456; // should be replaced by student code
+    public static int totalCuts() {
+        return cutCount;
     }
 
      /**
@@ -356,8 +353,7 @@ public class FibonacciHeap
     *  
     * ###CRITICAL### : you are NOT allowed to change H. 
     */
-    public static int[] kMin(FibonacciHeap H, int k)
-    {    
+    public static int[] kMin(FibonacciHeap H, int k) {
         int[] arr = new int[100];
         return arr; // should be replaced by student code
     }
