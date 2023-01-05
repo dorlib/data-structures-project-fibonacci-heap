@@ -259,9 +259,9 @@ public class FibonacciHeap
      *                   Should have correct prev and next pointers
      */
     private void addToStartOfTreeList(HeapNode startHeap2){
-        var startOrigin = this.treeListStart;
-        var lastOrigin = startOrigin.prev;
-        var lastHeap2 = startHeap2.prev;
+        HeapNode startOrigin = this.treeListStart;
+        HeapNode lastOrigin = startOrigin.prev;
+        HeapNode lastHeap2 = startHeap2.prev;
 
         // concatenate
         startOrigin.prev = lastHeap2;
@@ -307,7 +307,7 @@ public class FibonacciHeap
             this.deleteMin();
         }
 
-    	var oldMin = this.min;
+    	HeapNode oldMin = this.min;
         this.decreaseKey(x, x.key - oldMin.key + 1);
         this.deleteMinNoUpdate();
         this.min = oldMin;
@@ -547,5 +547,13 @@ public class FibonacciHeap
         public HeapNode next() {
             return currentNode.next;
         }
+    }
+
+    public static void main(String[] Args) {
+        FibonacciHeap heap = new FibonacciHeap();
+        heap.insert(1);
+        heap.insert(2);
+
+        System.out.println(heap);
     }
 }
