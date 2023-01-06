@@ -158,6 +158,59 @@ public class FibonacciHeap
         // TODO
     }
 
+    private void consolidate(){
+        // all trees but one has rank 0, the last tree has them all as children
+        int maxRank = size - (treeCount - 1);
+        HeapNode[] buckets = new HeapNode[maxRank];
+        HeapNode firstInNewList = null;
+
+        for (HeapNode tree : treeListStart) {
+            int rank = tree.rank;
+            if (buckets[rank] == null){
+                // bucket is empty
+                buckets[rank] = tree;
+                continue; // avoid nested ifs
+            }
+            //else
+            // bucket is filled, connect nodes;
+            HeapNode connected = connectTrees(buckets[rank], tree);
+            // empty the bucket
+            buckets[rank] = null;
+            if (firstInNewList == null){
+                firstInNewList = connected;
+                firstInNewList.next = firstInNewList;
+                firstInNewList.prev = firstInNewList;
+            }
+            else{
+                // add to new list
+                HeapNode last =  firstInNewList.prev;
+                last.next = connected;
+                connected.prev = last;
+                connected.next = firstInNewList;
+                firstInNewList.prev = connected;
+            }
+        }
+    }
+
+    /**
+     * Connect two trees such that the smaller one is at the top
+     * @param tree1 and
+     * @param tree2 will be connected
+     */
+    private HeapNode connectTrees(HeapNode tree1, HeapNode tree2){
+        // pointer assignment for readability
+        HeapNode smaller = tree1.key < tree2.key? tree1 : tree2;
+        HeapNode larger = tree1.key < tree2.key? tree2 : tree1;
+        HeapNode childStart = smaller.child;
+        HeapNode childEnd = childStart.prev;
+
+        // insert larger as the first child in the list
+        smaller.child = larger;
+        larger.next = childStart; childStart.prev = larger;
+        larger.prev = childEnd;   childEnd.next = larger;
+        return smaller;
+    }
+
     /**
      * delete minimum and don't update the minimum pointer
      */
@@ -336,6 +389,9 @@ public class FibonacciHeap
     	return -345; // should be replaced by student code
     }
 
+    private static void setLinks(int value){
+        linkCount
+    }
    /**
     * public static int totalCuts() 
     *
