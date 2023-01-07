@@ -186,26 +186,31 @@ public class FibonacciHeap
         if(this.isEmpty()){
             return;
         }
-        // prepare children for insertion
-        HeapNode child = this.min.child;
-        child.parent = null;
         int unmarkCounter = 0;
         int treeCounter = 0;
-        for (HeapNode node : child){
-            if (node.isMarked()){
-                unmarkCounter++;
-                node.unMark();
+        // prepare children for insertion
+        HeapNode child = this.min.child;
+        if (child != null) {
+            for (HeapNode node : child) {
+                if (node.isMarked()) {
+                    node.parent = null;
+                    unmarkCounter++;
+                    node.unMark();
+                }
+                treeCounter++;
             }
-            treeCounter++;
+            // insert child
+            addToStartOfTreeList(child);
         }
-        // insert child
-        addToStartOfTreeList(child);
         // remove min from the heap
         treeCounter--;
         HeapNode afterMin = this.min.next;
         HeapNode beforeMin = this.min.prev;
         beforeMin.next = afterMin;
         afterMin.prev = beforeMin;
+        if (this.min == this.treeListStart){
+            this.treeListStart = afterMin;
+        }
         // update fields
         this.addToCounters(treeCounter, 0, - unmarkCounter);
     }
@@ -309,7 +314,7 @@ public class FibonacciHeap
             return null;
         }
 
-    	HeapNode min = this.min;
+    	HeapNode min = this.treeListStart;
         for (HeapNode node : this.treeListStart) {
             if (node.key < min.key){
                 min = node;
@@ -649,6 +654,7 @@ public class FibonacciHeap
             return this.prev;
         }
 
+        @Override
         public Iterator<HeapNode> iterator(){
            return new TreesIterator(this);
         }
@@ -662,6 +668,7 @@ public class FibonacciHeap
 
         HeapNode currentNode;
         HeapNode firstNode;
+        boolean isFirst = true;
         public TreesIterator(HeapNode start){
             this.currentNode = start;
             this.firstNode = start;
@@ -674,7 +681,12 @@ public class FibonacciHeap
 
         @Override
         public HeapNode next() {
-            return currentNode.next;
+            if (isFirst){
+                isFirst = false;
+                return currentNode;
+            }
+            currentNode = currentNode.next;
+            return currentNode;
         }
     }
 

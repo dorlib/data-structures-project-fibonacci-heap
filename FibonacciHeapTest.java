@@ -1,11 +1,14 @@
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import jdk.jfr.TransitionFrom;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.w3c.dom.Node;
 
 import javax.xml.stream.events.StartDocument;
+import java.util.jar.JarEntry;
 
 class FibonacciHeapTest {
 
@@ -18,6 +21,9 @@ class FibonacciHeapTest {
             buildHeap(10);
         }
         void buildHeap(Integer l) {
+            buildHeap(l, l+1);
+        }
+        void buildHeap(Integer l, int consolidateEvery) {
             l = (l==null || l < 1)? 10 : l;
             FibonacciHeap.HeapNode min = new FibonacciHeap.HeapNode(0);
             min.next = min;
@@ -29,6 +35,9 @@ class FibonacciHeapTest {
                 node.prev = node;
                 var heap2 = new FibonacciHeap(node, node, 1,1,0);
                 heap.meld(heap2);
+                if (i % consolidateEvery == 0){
+                    heap.consolidate();
+                }
             }
         }
         @Test
@@ -58,9 +67,11 @@ class FibonacciHeapTest {
             while (parent.child != null){
                 var child = parent.child;
                 assertEquals(parent, child.parent, "Child failed");
+                assertTrue(parent.key < child.key, "Child was smaller");
                 var bro = child.next;
                 while (bro != child){
                     assertEquals(parent, bro.parent, "Bro failed");
+                    assertTrue(parent.key < bro.key, "Child was smaller");
                     bro = bro.next;
                 }
                 parent = child;
@@ -77,6 +88,39 @@ class FibonacciHeapTest {
                     System.err.println("    " + e.getMessage());
                 }
             }
+        }
+        @Test
+        void testDeletionFromLinkedList(){
+            StringBuilder errors = new StringBuilder();
+            for (int i = 10; i < 10000; i++) {
+                buildHeap(i);
+                try {
+                    heap.deleteMin();
+                    assertEquals(1, heap.min.key);
+                } catch (Exception e){
+                    errors.append("Error at length ").append(i).append("\n");
+                    errors.append("    ").append(e.getMessage()).append("\n");
+                }
+            }
+            assert errors.toString().equals("") : errors;
+        }
+        @Test
+        void testDeletionFromTrees(){
+            StringBuilder errors = new StringBuilder();
+            for (var j : new int[] {2,3,5,7,11,13,17,19,23,29,31,37}) {
+                for (int i = 10; i < 100; i++) {
+                    buildHeap(i, j);
+                    try {
+                        heap.deleteMin();
+                        assertEquals(1, heap.min.key);
+                    } catch (Exception e) {
+                        errors.append("Error at length ").append(i)
+                                .append(" consolidate at ").append(j).append("\n");
+                        errors.append("    ").append(e.getMessage()).append("\n");
+                    }
+                }
+            }
+            assert errors.toString().equals("") : errors;
         }
     }
 
