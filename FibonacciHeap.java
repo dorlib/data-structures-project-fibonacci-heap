@@ -9,7 +9,7 @@ public class FibonacciHeap
 {
     // fields of FibonacciHeap.
     public HeapNode min;
-    private HeapNode treeListStart;
+    protected HeapNode treeListStart;
     public int treeCount;
     public int size;
     public static int linkCount;
@@ -94,7 +94,7 @@ public class FibonacciHeap
     *   
     */
     public boolean isEmpty() {
-    	return this.getSize() > 0;
+    	return this.getSize() <= 0;
     }
 		
    /**
@@ -193,10 +193,8 @@ public class FibonacciHeap
      * @post: updates tree count and link count
      * @post: updates treeListStart pointer
      */
-    private void consolidate(){
-        // all trees but one has rank 0, the last tree has them all as children
-        int maxRank = size - (treeCount - 1);
-        HeapNode[] buckets = new HeapNode[maxRank];
+    protected void consolidate(){
+        HeapNode[] buckets = new HeapNode[size+1];
 
         int linkCounter = 0;
         HeapNode tree = treeListStart;
@@ -257,14 +255,21 @@ public class FibonacciHeap
         HeapNode smaller = tree1.key < tree2.key? tree1 : tree2;
         HeapNode larger = tree1.key < tree2.key? tree2 : tree1;
         HeapNode childStart = smaller.child;
-        HeapNode childEnd = childStart.prev;
+        HeapNode childEnd = (childStart != null)? childStart.prev : null;
 
         // insert larger as the first child in the list
         smaller.next = tree2.next;
         smaller.child = larger;
-        larger.next = childStart; childStart.prev = larger;
-        larger.prev = childEnd;   childEnd.next = larger;
-
+        larger.parent = smaller;
+        if (childStart != null) {
+            larger.next = childStart;
+            childStart.prev = larger;
+            childEnd.next = larger;
+            larger.prev = childEnd;
+        } else{
+            larger.next = larger;
+            larger.prev = larger;
+        }
         // update rank
         smaller.rank++;
         return smaller;
@@ -373,7 +378,7 @@ public class FibonacciHeap
         // all trees but one has rank 0, the last tree has them all as children
         int theoreticalMaxRank = size - (treeCount - 1);
         int actulaMaxRank = 0;
-    	int[] arr = new int[theoreticalMaxRank];
+    	int[] arr = new int[theoreticalMaxRank+1];
         for (HeapNode tree : treeListStart){
             arr[tree.rank]++;
             actulaMaxRank = (actulaMaxRank > tree.rank)? actulaMaxRank : tree.rank;
@@ -567,6 +572,10 @@ public class FibonacciHeap
 
         public Iterator<HeapNode> iterator(){
            return new TreesIterator(this);
+        }
+        @Override
+        public String toString(){
+            return "(%d)".formatted(this.key);
         }
     }
 
