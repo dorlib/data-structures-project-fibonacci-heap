@@ -5,3 +5,6 @@
 # compiled files
 out
 *.class
+
+# test files
+*Test.java
