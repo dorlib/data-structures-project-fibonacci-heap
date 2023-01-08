@@ -119,10 +119,10 @@ public class FibonacciHeap
 
         // insert the created node to the heap if the heap is not empty.
         HeapNode newNode = this.createNode(key, 0, false, null, null, null, null);
-        this.min.prev.next = newNode;
-        newNode.next = this.getMin();
-        newNode.prev = this.min.getPrev();
-        this.min.prev = newNode;
+        this.treeListStart.prev.next = newNode;
+        newNode.next = this.treeListStart;
+        newNode.prev = this.treeListStart.getPrev();
+        this.treeListStart.prev = newNode;
 
         this.updateMin(newNode);
         this.size++;
@@ -174,6 +174,7 @@ public class FibonacciHeap
     public void deleteMin() {
         deleteMinNoUpdate();
         this.min = findMin();
+        this.size--;
         consolidate();
     }
 
@@ -433,6 +434,7 @@ public class FibonacciHeap
         this.decreaseKey(x, x.key - oldMin.key + 1);
         this.deleteMinNoUpdate();
         this.min = oldMin;
+        this.size--;
     }
 
    /**
@@ -693,16 +695,13 @@ public class FibonacciHeap
     public static void main(String[] Args) {
         FibonacciHeap heap = new FibonacciHeap();
         heap.insert(3);
-
-        HeapNode min = heap.getMin();
-        System.out.println(heap.min.key);
-
         heap.insert(5);
+        heap.insert(7);
+        heap.insert(9);
 
-        System.out.println(heap.min.key);
+        heap.deleteMin();
 
-        heap.decreaseKey(min, 2);
+        System.out.println(heap.findMin());
 
-        System.out.println(heap.min.key);
     }
 }
