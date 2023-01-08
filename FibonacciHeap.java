@@ -113,6 +113,7 @@ public class FibonacciHeap
             this.min = newNode;
             this.treeListStart = newNode;
             this.size = 1;
+            this.treeCount = 1;
 
             return newNode;
         }
@@ -123,9 +124,11 @@ public class FibonacciHeap
         newNode.next = this.treeListStart;
         newNode.prev = this.treeListStart.getPrev();
         this.treeListStart.prev = newNode;
+        this.treeListStart = newNode;
 
         this.updateMin(newNode);
         this.size++;
+        this.treeCount++;
 
         return newNode;
     }
@@ -139,6 +142,7 @@ public class FibonacciHeap
             this.min = root;
             this.treeListStart = root;
             this.size = 1;
+            this.treeCount = 1;
 
             return;
         }
@@ -150,6 +154,7 @@ public class FibonacciHeap
 
         this.updateMin(root);
         this.size++;
+        this.treeCount++;
 
         return;
     }
