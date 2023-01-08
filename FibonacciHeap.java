@@ -696,17 +696,4 @@ public class FibonacciHeap
             return currentNode;
         }
     }
-
-    public static void main(String[] Args) {
-        FibonacciHeap heap = new FibonacciHeap();
-        heap.insert(3);
-        heap.insert(5);
-        heap.insert(7);
-        heap.insert(9);
-
-        heap.deleteMin();
-
-        System.out.println(heap.findMin());
-
-    }
 }
