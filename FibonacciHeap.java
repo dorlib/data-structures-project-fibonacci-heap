@@ -371,23 +371,27 @@ public class FibonacciHeap
 
     /**
      * Adds to the start of trees list
-     * @param startHeap2 node at the start of the new list (can be one long)
+     * @param startListToInsert node at the start of the new list (can be one long)
      *                   Should have correct prev and next pointers
      * @post: update treeListStart pointer
      */
-    private void addToStartOfTreeList(HeapNode startHeap2){
+    private void addToStartOfTreeList(HeapNode startListToInsert){
+        if (this.isEmpty()) {
+            this.treeListStart = startListToInsert;
+            return;
+        }
         HeapNode startOrigin = this.treeListStart;
         HeapNode lastOrigin = startOrigin.prev;
-        HeapNode lastHeap2 = startHeap2.prev;
+        HeapNode lastListToInsert = startListToInsert.prev;
 
         // concatenate
-        startOrigin.prev = lastHeap2;
-        lastHeap2.next = startOrigin;
-        lastOrigin.next = startHeap2;
-        startHeap2.prev = lastOrigin;
+        startOrigin.prev = lastListToInsert;
+        lastListToInsert.next = startOrigin;
+        lastOrigin.next = startListToInsert;
+        startListToInsert.prev = lastOrigin;
 
         // update pointer
-        this.treeListStart = startHeap2;
+        this.treeListStart = startListToInsert;
     }
 
    /**
@@ -416,8 +420,8 @@ public class FibonacciHeap
             arr[tree.rank]++;
             actulaMaxRank = (actulaMaxRank > tree.rank)? actulaMaxRank : tree.rank;
         }
-        int[] noNullArr = new int[actulaMaxRank];
-        for (int i = 0; i < actulaMaxRank; i++) {
+        int[] noNullArr = new int[actulaMaxRank + 1];
+        for (int i = 0; i < noNullArr.length; i++) {
             noNullArr[i] = arr[i];
         }
         return noNullArr;
@@ -683,7 +687,7 @@ public class FibonacciHeap
 
         @Override
         public boolean hasNext() {
-            return currentNode != null && currentNode.next != firstNode;
+            return isFirst || (currentNode != null && currentNode.next != firstNode);
         }
 
         @Override
