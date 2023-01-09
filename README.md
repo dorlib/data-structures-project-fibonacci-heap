@@ -3,8 +3,53 @@
 This is the second programming project in data structures course. </br>
 In this project we will implement a fibonacci heap. </br>
 
-- [Contributing](#Contributing)    
-- [Maintainers](#maintainers)
+- [Heap Node class](#Heap-Node-Class)
+    - [functions & time complexity table](#Heap-Node-functions-&-time-complexity)
+- [Fibonacci Heap class](#Fibonacci-Heap-Class)
+    - [functions & time complexity table](#Fibonacci-Heap-functions-&-time-complexity)
+- [Contributing](#Contributing)
+- [Maintainers](#Creators-/-Maintainers)
+
+## Heap Node Class
+
+Heap Node class implement a Node in the fibonacci heap. 
+
+### Heap Node functions & time complexity
+
+| Function     | Description                                         | Time Complexity | 
+|:-------------|:----------------------------------------------------|:----------------|
+| getKey()     | Returns the key field of this.                      | O(1)            |
+| getRank()    | Returns the rank field of this.                     | O(1)            |
+| isMarked()   | Returns true if this is marked, or false otherwise. | O(1)            |
+| mark()       | Mark this.                                          | O(1)            |
+| unMark()     | Unmark this.                                        | O(1)            |
+| getChild()   | Returns the child field of this.                    | O(1)            |
+| getParent()  | Returns the parent field of this.                   | O(1)            |
+| getNext()    | Returns the next field of this.                     | O(1)            | 
+| getPrev()    | Returns the prev field of this.                     | O(1)            |
+
+## Fibonacci Heap Class
+
+Fibonacci Heap include the implementation of the Heap's functionality and the methods that the user will use.
+    
+### Fibonacci Heap functions & time complexity
+
+| Function                       | Description                                                                     | Time Complexity | 
+|:-------------------------------|:--------------------------------------------------------------------------------|:----------------|
+| iEmpty()                       | Returns true if and only if the Heap is empty.                                  | O(1)            |
+| insert(int i)                  | Inserts to the heap new heap node with the key i and returns the new heap node. | O(1)            |
+| deleteMin()                    | Removes the node with the minimal key from the heap.                            | O(log(n))       |
+| findMin()                      | Returns the node with the minimal key from the heap.                            | O(log(n))       |
+| meld(FibonacciHeap heap2)      | Melds heap2 with the current heap.                                              |                 |
+| size()                         |                                                                                 |                 |
+| counterRep()                   |                                                                                 |                 |
+| delete(HeapNode x)             |                                                                                 |                 | 
+| decreaseKey(HeapNode x, int d) |                                                                                 |                 |
+| nonMarked()                    |                                                                                 |                 |
+| potential(lst)                 |                                                                                 |                 |
+| totalLinks()                   |                                                                                 |                 |
+| totalCuts()                    |                                                                                 |
+| kMin(FibonacciHeap H, int k)   |                                                                                 |
 
 ## Contributing
 
