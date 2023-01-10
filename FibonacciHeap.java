@@ -449,62 +449,78 @@ public class FibonacciHeap
     * to reflect this change (for example, the cascading cuts procedure should be applied if needed).
     */
     public void decreaseKey(HeapNode x, int delta) {
-        if (this.isEmpty() || x == null) {
+        if (this.isEmpty() || x == null || delta < 0) {
             return;
         }
 
+        HeapNode keyToDecrease = x;
         x.key -= delta;
-        HeapNode parent = x.parent;
+        int decreasedValue = x.key;
 
-        if (parent != null && x.key < parent.key) {
-            cutNode(x, parent);
-            cascadeCut(parent);
+        if (x.getParent() == null) {
+            if (x.getKey() < this.min.getKey())
+                this.min = x;
+            return;
         }
 
-        updateMin(x);
+        if (x.getParent().getKey() <= x.getKey()) {
+            return;
+        }
+
+        x.mark = true;
+
+        //if we got here, we need to cut x.
+        while(x.isMarked()) {
+            HeapNode parent = x.parent;
+            cutNode(x);
+
+            if (x.isMarked()) {
+                x.mark = false;
+                this.markedCount--;
+            }
+
+            x = parent;
+        }
+
+        // update min.
+        if (decreasedValue < this.min.getKey()) {
+            min = keyToDecrease;
+        }
+
+        if (x.getParent() != null) {
+            x.mark = true;
+            this.markedCount++;
+        }
     }
 
-    private void cutNode(HeapNode x, HeapNode parent) {
-        if (x == x.next) {
-            parent.child = null;
+    public void cutNode(HeapNode x) {
+        x.getParent().rank--;
+
+        if (x.getParent().getChild() == x) {
+            if (x.getNext() == x)
+                x.getParent().child = null;
+            else
+                x.getParent().child = x.getNext();
         }
 
-        x.prev.next = x.getNext();
-        x.next.prev = x.getPrev();
-        if (x == parent.child) {
-            x.child = parent.getNext();
-        }
+        x.parent = null;
 
-        x.rank = parent.getRank() - 1;
+        HeapNode nextNode = x.getNext();
+        HeapNode prevNode = x.getPrev();
+
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+
         x.next = x;
         x.prev = x;
 
-        this.min.prev.next = x;
-        x.next = this.getMin();
-        x.prev = this.getMin().getNext();
-
+        x.prev = this.min.getPrev();
+        x.getPrev().next = x;
+        x.next = this.min;
         this.min.prev = x;
-        x.parent = null;
-        x.mark = true;
 
-        this.markedCount++;
-    }
-
-    private void cascadeCut(HeapNode parent) {
-        HeapNode temp = parent.getParent();
-
-        this.treeCount++;
-
-        if (temp != null) {
-            if (!parent.mark) {
-                parent.mark = true;
-                this.markedCount++;
-            }
-            else {
-                cutNode(parent, temp);
-                cascadeCut(temp);
-            }
-        }
+        treeCount++;
+        cutCount++;
     }
 
    /**
