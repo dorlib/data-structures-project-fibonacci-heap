@@ -177,18 +177,17 @@ public class FibonacciHeap
     * @post: heap is consolidated to a binomial heap
     */
     public void deleteMin() {
-        deleteMinNoUpdate();
+        deleteMinAndDontFindNew();
         this.min = findMin();
-        this.size--;
         consolidate();
     }
 
     /**
      * delete minimum and don't update the minimum pointer
-     * @post: update marked count and tree count
+     * @post: updates size, marked count, and tree count
      * @post: update treeListStart pointer
      */
-    private void deleteMinNoUpdate(){
+    private void deleteMinAndDontFindNew(){
         if(this.isEmpty()){
             return;
         }
@@ -197,7 +196,7 @@ public class FibonacciHeap
         // prepare children for insertion
         HeapNode child = this.min.child;
         if (child != null) {
-            for (HeapNode node : child) {
+            for (HeapNode node : new IterableNode(child)) {
                 if (node.isMarked()) {
                     node.parent = null;
                     unmarkCounter++;
@@ -218,7 +217,7 @@ public class FibonacciHeap
             this.treeListStart = afterMin;
         }
         // update fields
-        this.addToCounters(treeCounter, 0, - unmarkCounter);
+        this.addToCounters(treeCounter, -1, -unmarkCounter);
     }
 
     /**
@@ -321,7 +320,7 @@ public class FibonacciHeap
         }
 
     	HeapNode min = this.treeListStart;
-        for (HeapNode node : this.treeListStart) {
+        for (HeapNode node : new IterableNode(this.treeListStart)) {
             if (node.key < min.key){
                 min = node;
             }
@@ -419,7 +418,7 @@ public class FibonacciHeap
         int theoreticalMaxRank = size - (treeCount - 1);
         int actulaMaxRank = 0;
     	int[] arr = new int[theoreticalMaxRank+1];
-        for (HeapNode tree : treeListStart){
+        for (HeapNode tree : new IterableNode(treeListStart)){
             arr[tree.rank]++;
             actulaMaxRank = (actulaMaxRank > tree.rank)? actulaMaxRank : tree.rank;
         }
@@ -444,9 +443,8 @@ public class FibonacciHeap
 
     	HeapNode oldMin = this.min;
         this.decreaseKey(x, x.key - oldMin.key + 1);
-        this.deleteMinNoUpdate();
+        this.deleteMinAndDontFindNew();
         this.min = oldMin;
-        this.size--;
     }
 
    /**
@@ -479,21 +477,25 @@ public class FibonacciHeap
         x.prev.next = x.getNext();
         x.next.prev = x.getPrev();
         if (x == parent.child) {
-            x.child = parent.getNext();
-        }
+            x.child = parent.getNext(); // before: (parent)->(a)
+                                        //           ↆ
+                                        //          (x)        ↶
+        }                               // after: (parent)-> (a)|
+                                        //           ↆ         /
+                                        //          (x)      /
+                                        //           L_____/
 
         x.rank = parent.getRank() - 1;
         x.next = x;
-        x.prev = x;
+        x.prev = x; // (x) points to itself
 
-        this.min.prev.next = x;
+        this.min.prev.next = x;  // before: (a)->(min)->(b), (x)
         x.next = this.getMin();
         x.prev = this.getMin().getNext();
-
         this.min.prev = x;
-        x.parent = null;
-        x.mark = true;
-
+        x.parent = null;         // after:  (a)->(x)->(min), x.prev=(b)
+        x.mark = true; // x is a tree root => should not be marked
+                       // parent should be marked but isn't
         this.markedCount++;
     }
 
@@ -587,7 +589,7 @@ public class FibonacciHeap
             minimalNodes[i] = node.key;
             helper.deleteMin();
             if (node.child != null) {// insert all children on current min
-                for (HeapNode child : node.child) {
+                for (HeapNode child : new IterableNode(node.child)) {
                     helper.insert(child);
                 }
             }
@@ -708,7 +710,7 @@ public class FibonacciHeap
     * (for example HeapNode), do it in this file, not in another file. 
     *  
     */
-    public static class HeapNode implements Iterable<HeapNode>{
+    public static class HeapNode {
 
         // fields of HeapNode.
     	public int key;
@@ -746,11 +748,18 @@ public class FibonacciHeap
     	}
 
        /**
-        * Constructs a node with key
+        * Constructs a lonely node with key
         * @param key to be stored in the node
         */
         public HeapNode(int key){
             this(key, 0, false, null, null, null, null);
+        }
+
+       /**
+        * Constructs a lonely node with key = 0
+        */
+       public HeapNode(){
+            this(0);
         }
 
     	public int getKey() {
@@ -790,21 +799,41 @@ public class FibonacciHeap
         }
 
         @Override
-        public Iterator<HeapNode> iterator(){
-           return new TreesIterator(this);
-        }
-        @Override
         public String toString(){
             return "(%d)".formatted(this.key);
         }
     }
 
-    private static class TreesIterator implements Iterator<HeapNode>{
+    /**
+     * An iterable HeapNode wrapper class for iteration purposes
+     */
+    protected static class IterableNode implements Iterable<HeapNode>{
+
+        HeapNode start;
+
+        /**
+         * construct from existing node
+         * @param node to start iterating from
+         */
+        public IterableNode(HeapNode node){
+            start = node;
+        }
+        @Override
+        public Iterator<HeapNode> iterator(){
+            return new HeapNodeIteratorAsLinkedList(start);
+        }
+    }
+
+    /**
+     * Iterates over HeapNodes at the same rank
+     * @- goes to the next until it wraps back around
+     */
+    private static class HeapNodeIteratorAsLinkedList implements Iterator<HeapNode>{
 
         HeapNode currentNode;
         HeapNode firstNode;
         boolean isFirst = true;
-        public TreesIterator(HeapNode start){
+        public HeapNodeIteratorAsLinkedList(HeapNode start){
             this.currentNode = start;
             this.firstNode = start;
         }

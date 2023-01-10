@@ -1,14 +1,16 @@
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.sun.source.tree.InstanceOfTree;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.stream.IntStream;
 
 class FibonacciHeapTest {
+    Random random = new Random(69420);
     FibonacciHeap heap;
     static final int[] PRIMES = new int[] {2,3,5,7,11,13,17,19,23,29,31,37};
     void buildHeap(Integer l) {
@@ -31,6 +33,35 @@ class FibonacciHeapTest {
             }
         }
     }
+
+    /**
+     * @return an array of all numbers in the heap in order of insertion
+     */
+    int[] randomInserts(int i, Set<Integer> inHeap){
+        ArrayList<Integer> lst = new ArrayList<>();
+        while(lst.size() < i){
+            int randint = random.nextInt(-100*i,100*i);
+            if (!inHeap.contains(randint)){
+                lst.add(randint);
+                inHeap.add(randint);
+            }
+        }
+        int[] arr = new int[lst.size()];
+        for (int j = 0; j < lst.size(); j++) {
+            heap.insert(lst.get(j));
+            arr[j]=lst.get(j);
+            if (random.nextInt() % 2 == 0){
+                heap.consolidate();
+            }
+        }
+        return arr;
+    }
+
+    int[] randomInserts(int i){
+        Set<Integer> inHeap = new HashSet<>();
+        return randomInserts(i, inHeap);
+    }
+
 
     /*void printHeap(FibonacciHeap h){
         StringBuilder[] output = new StringBuilder[h.treeCount];
@@ -273,6 +304,89 @@ class FibonacciHeapTest {
                 multiplier = multiplier * 2;
             }
             assertEquals(heap.size, sum, "Iteration %d".formatted(i));
+        }
+    }
+
+    @Nested
+    class findMin{
+        @Test
+        void minWasInsertedLongAgo() {
+            final int N = 1000;
+            for (int i = 0; i < N; i++) {
+                int large = N*N;
+                heap = new FibonacciHeap();
+                heap.insert(large);
+                heap.insert(large+1);
+                heap.insert(-large);
+                int[] itemsInHeap = randomInserts(i);
+                assertEquals(-large, heap.min.key);
+                assertEquals(-large, heap.findMin().key);
+            }
+        }
+    }
+
+    @Nested
+    class insert{
+        @Test
+        void insertRandomNumbers(){
+            // long test
+            for (int i = 1; i < 5000; i++) {
+                heap = new FibonacciHeap();
+                int[] itemsInHeap = randomInserts(i);
+                assertEquals(heap.size, i, "iteration i = %d\n".formatted(i));
+                Arrays.sort(itemsInHeap);
+                int[] fromHeap = new int[i];
+                int delCount = 0;
+                for (int j = 0; j < i; j++) {
+                    fromHeap[j] = heap.getMin().key;
+                    heap.deleteMin();
+                    delCount++;
+                    assertEquals(heap.size, i - delCount);
+                }
+                assertArrayEquals(itemsInHeap, fromHeap, "iteration i = %d\n".formatted(i));
+            }
+        }
+    }
+
+    @Nested
+    class decreaseKey{
+        @Test
+        void simpleCase(){
+            var heap2 = new FibonacciHeap();
+            heap = new FibonacciHeap();
+            Set<Integer> integerSet = new HashSet<>(Arrays.stream(randomInserts(1000)).boxed().toList());
+            heap2.insert(555);
+            heap.meld(heap2);
+            integerSet.add(555);
+            var node = heap2.min;
+            randomInserts(1000, integerSet);
+            assertEquals(0, heap.getCutCount());
+            heap.decreaseKey(node, 93185);
+            assertTrue(heap.getCutCount() > 0);
+
+        }
+    }
+
+    @Nested
+    class Iterator{
+        @Test
+        void simpleCase(){
+            FibonacciHeap.HeapNode start = new FibonacciHeap.HeapNode(0);
+            FibonacciHeap.HeapNode node = start;
+            for (int i = 1; i < 10; i++) {
+                node.next = new FibonacciHeap.HeapNode(i);
+                node.next.prev = node;
+                node = node.next;
+            }
+            node.next = start;
+            start.prev = node;
+
+            for (FibonacciHeap.HeapNode item: new FibonacciHeap.IterableNode(start)) {
+                assertEquals(start, item);
+                assertInstanceOf(FibonacciHeap.HeapNode.class, item);
+                assertNotSame(FibonacciHeap.IterableNode.class, item.getClass());
+                start = start.next;
+            }
         }
     }
 }
