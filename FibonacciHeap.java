@@ -1,3 +1,5 @@
+import org.w3c.dom.Node;
+
 import java.util.Iterator;
 
 /**
@@ -412,6 +414,9 @@ public class FibonacciHeap
     * 
     */
     public int[] countersRep() {
+        if (this.isEmpty()){
+            return new int[]{};
+        }
         // all trees but one has rank 0, the last tree has them all as children
         int theoreticalMaxRank = size - (treeCount - 1);
         int actulaMaxRank = 0;
@@ -573,8 +578,129 @@ public class FibonacciHeap
     * ###CRITICAL### : you are NOT allowed to change H. 
     */
     public static int[] kMin(FibonacciHeap H, int k) {
-        int[] arr = new int[100];
-        return arr; // should be replaced by student code
+        if (H.isEmpty() || k == 0){
+            return new int[]{};
+        }
+        int[] minimalNodes = new int[k];
+        binomialHeap helper = new binomialHeap(H.size);
+        helper.insert(H.min);
+        for (int i = 0; i < k; i++) {
+            HeapNode node = helper.getMin();
+            minimalNodes[i] = node.key;
+            helper.deleteMin();
+            if (node.child != null) {// insert all children on current min
+                for (HeapNode child : node.child) {
+                    helper.insert(child);
+                }
+            }
+        }
+        return minimalNodes; // should be replaced by student code
+    }
+
+    /**
+     * helper class for kMin
+     */
+    private static class binomialHeap {
+        HeapNode[] heap;
+        int size = 0;
+
+        /**
+         * builds a new helper binomial heap for kMin
+         * @param s maximum size of the heap
+         */
+        private binomialHeap(int s){
+            heap = new HeapNode[s];
+        }
+
+        /**
+         * inserts to heap and heapifies down
+         * @param node the node to insert to the heap
+         */
+        private void insert(HeapNode node){
+            if (node == null){
+                return;
+            }
+            size++;
+            set(size, node);
+            heapifyUp(size);
+        }
+
+        private void heapifyUp(int i){
+            HeapNode ithNode = get(i);
+            HeapNode parent = get(parentIndex(i));
+            while (ithNode != null && parent != null
+                    && i > 1 && ithNode.key < parent.key){
+                // switch parent and i
+                HeapNode mem = parent;
+                set(i, parent);
+                set(parentIndex(i), ithNode);
+                // iterate to the parent
+                i = parentIndex(i);
+                ithNode = get(i);
+                parent = get(parentIndex(i));
+            }
+        }
+
+        /**
+         * deletes the minimum value in the heap and finds a new one
+         */
+        private void deleteMin(){
+            set(1,get(size));
+            size--;
+            heapifyDown(1);
+        }
+
+        /**
+         * @param i < size || 0 < i
+         */
+        private void heapifyDown(int i){
+            if (i < 1 || i > size){
+                return;
+            }
+            int l = leftIndex(i);
+            int r = rightIndex(i);
+            int smallest = i;
+            HeapNode left = get(l);
+            if (l < size && left != null && left.key < get(smallest).key){
+                smallest = l; // left node is smaller
+            }
+            HeapNode right = get(r);
+            if (r < size && right != null && right.key < get(smallest).key){
+                smallest = r; // right node is smaller
+            }
+            if (smallest > i){
+                // switch smaller node with i
+                HeapNode mem = get(i);
+                set(i, get(smallest));
+                set(smallest, mem);
+                // correct from smallest and down;
+                heapifyDown(smallest);
+            }
+        }
+
+        private void set(int i, HeapNode node){
+            heap[i-1] = node;
+        }
+        private HeapNode get(int i){
+            if(i < 1 || i > size){
+                return null;
+            }
+            return heap[i-1];
+        }
+
+        private HeapNode getMin(){
+            return this.heap[0];
+        }
+
+        private static int parentIndex(int i){
+            return i/2; // int division => floor
+        }
+        private static int leftIndex(int i){
+            return 2*i;
+        }
+        private static int rightIndex(int i){
+            return 2*i+1;
+        }
     }
     
    /**

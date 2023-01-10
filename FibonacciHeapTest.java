@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 class FibonacciHeapTest {
     FibonacciHeap heap;
     static final int[] PRIMES = new int[] {2,3,5,7,11,13,17,19,23,29,31,37};
@@ -28,6 +31,30 @@ class FibonacciHeapTest {
             }
         }
     }
+
+    /*void printHeap(FibonacciHeap h){
+        StringBuilder[] output = new StringBuilder[h.treeCount];
+        int i = 0;
+        for (FibonacciHeap.HeapNode tree: h.treeListStart) {
+            output[i] = new StringBuilder("(%d)\n  |\n".formatted(tree.key));
+            output[i].append(printTree(tree.child));
+        }
+        System.out.println(Arrays.toString(output));
+    }
+    String printTree(FibonacciHeap.HeapNode node){
+        if (node == null){
+            return "";
+        }
+        StringBuilder output = new StringBuilder();
+        for (FibonacciHeap.HeapNode bro : node) {
+            output.append("(%d)->".formatted(bro.key));
+        }
+        int len = output.length();
+        output.replace(len-2, len-1, "\n  |\n");
+        output.append(printTree(node.child));
+        return output.toString();
+    }*/
+
     @Nested
     class deleteMin {
 
@@ -87,14 +114,16 @@ class FibonacciHeapTest {
         @Test
         void testDeletionFromLinkedList(){
             StringBuilder errors = new StringBuilder();
-            for (int i = 10; i < 10000; i++) {
+            for (int i = 10; i < 1000; i++) {
                 buildHeap(i);
-                try {
-                    heap.deleteMin();
-                    assertEquals(1, heap.min.key);
-                } catch (Exception e){
-                    errors.append("Error at length ").append(i).append("\n");
-                    errors.append("    ").append(e.getMessage()).append("\n");
+                for (int j = 1; j < i; j++) {
+                    try {
+                        heap.deleteMin();
+                        assertEquals(j, heap.min.key);
+                    } catch (Exception e){
+                        errors.append("Error at length ").append(i).append("\n");
+                        errors.append("    ").append(e.getMessage()).append("\n");
+                    }
                 }
             }
             assert errors.toString().equals("") : errors;
@@ -117,12 +146,41 @@ class FibonacciHeapTest {
             }
             assert errors.toString().equals("") : errors;
         }
+        @Test
+        void binomialTree(){
+            buildHeap(8);
+            heap.consolidate();
+
+            assert true;
+        }
     }
 
     @Nested
-    class findMin {
-        @BeforeEach
-        void setUp() {
+    class kMin {
+        void buildBinomial(int k){
+            buildHeap((int) Math.pow(2,k));
+            heap.consolidate();
+        }
+
+        @Test
+        void testKMin(){
+            for (int i = 0; i < 8; i++) {
+                buildBinomial(i);
+                int[] ret;
+                int[] expected;
+                for (int j = 0; j < Math.pow(2,i); j++) {
+                    try {
+                        ret = FibonacciHeap.kMin(heap, j);
+                    } catch (Exception e){
+                        System.err.printf("at iteration i = %d, j = %d%n", i,j);
+                        throw e;
+                    }
+                    expected = IntStream.range(0,j).toArray();
+                    assertArrayEquals(expected, ret,
+                            "i = %d, j = %d\n ret = %s\n".formatted(i,j,Arrays.toString(ret))
+                    );
+                }
+            }
         }
     }
 
@@ -171,7 +229,7 @@ class FibonacciHeapTest {
         void empty() {
             heap = new FibonacciHeap();
             int[] arr = heap.countersRep();
-            assertEquals(new int[] {}, arr);
+            assertArrayEquals(new int[] {}, arr);
         }
 
         @Test
