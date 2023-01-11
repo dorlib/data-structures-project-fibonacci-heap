@@ -1,7 +1,6 @@
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.sun.source.tree.InstanceOfTree;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,8 @@ class FibonacciHeapTest {
             node.next = node;
             node.prev = node;
             var heap2 = new FibonacciHeap(node, node, 1,1,0);
-            heap.meld(heap2);
+            heap2.meld(heap);
+            heap = heap2;
             if (i % consolidateEvery == 0){
                 heap.consolidate();
             }
@@ -178,11 +178,21 @@ class FibonacciHeapTest {
             assert errors.toString().equals("") : errors;
         }
         @Test
-        void binomialTree(){
+        void binomialTree8(){
             buildHeap(8);
             heap.consolidate();
-
-            assert true;
+            heap.deleteMin();
+            assertEquals(heap.min.key, 1);
+            assertEquals(heap.treeCount, 3);
+        }
+        @Test
+        void binomialTree2(){
+            buildHeap(2);
+            assertEquals(heap.treeCount, 2);
+            heap.consolidate();
+            heap.deleteMin();
+            assertEquals(heap.min.key, 1);
+            assertEquals(heap.treeCount, 1);
         }
     }
 
@@ -338,7 +348,7 @@ class FibonacciHeapTest {
                 int[] fromHeap = new int[i];
                 int delCount = 0;
                 for (int j = 0; j < i; j++) {
-                    fromHeap[j] = heap.getMin().key;
+                    fromHeap[j] = heap.treeListStart().key;
                     heap.deleteMin();
                     delCount++;
                     assertEquals(heap.size, i - delCount);
@@ -361,9 +371,45 @@ class FibonacciHeapTest {
             var node = heap2.min;
             randomInserts(1000, integerSet);
             assertEquals(0, heap.getCutCount());
+            int oldTreeCount = heap.treeCount;
             heap.decreaseKey(node, 93185);
             assertTrue(heap.getCutCount() > 0);
+            assertEquals(oldTreeCount + 1, heap.treeCount);
+        }
 
+        @Test
+        void binomialTree(){
+            buildHeap((int) Math.pow(2, 4));
+            heap.consolidate();
+            var oldmin = heap.min;
+            var node = heap.min.child;
+            heap.decreaseKey(node, 1000000);
+            assertEquals(heap.min, node);
+            assertEquals(2, heap.treeCount);
+            assertNotSame(node, oldmin.child);
+            assertNotSame(node, oldmin.child.next.prev);
+            assertNotSame(node, oldmin.child.prev.next);
+            assertFalse(node.isMarked());
+            assertFalse(oldmin.isMarked());
+
+            buildHeap((int) Math.pow(2, 5));
+            heap.consolidate();
+            var root = heap.treeListStart;
+            var child1 = root.child;
+            var child2 = child1.child;
+            var child3 = child2.child;
+            var child4 = child3.child;
+            heap.decreaseKey(child4, 900000);
+            assertTrue(child3.isMarked());
+            heap.decreaseKey(child3, 900000);
+            assertFalse(child3.isMarked());
+            assertTrue(child2.isMarked());
+            heap.decreaseKey(child2, 900000);
+            assertFalse(child2.isMarked());
+            assertTrue(child1.isMarked());
+            heap.decreaseKey(child1, 900000);
+            assertFalse(child1.isMarked());
+            assertFalse(root.isMarked());
         }
     }
 

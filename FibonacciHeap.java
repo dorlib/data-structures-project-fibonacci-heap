@@ -61,7 +61,7 @@ public class FibonacciHeap
         this(null, null, 0,0,0);
     }
 
-    public HeapNode getMin() {
+    public HeapNode treeListStart() {
         return this.min;
     }
 
@@ -71,6 +71,10 @@ public class FibonacciHeap
 
     public int getSize() {
         return this.size;
+    }
+
+    public HeapNode getFirst(){
+        return this.treeListStart;
     }
 
     public int getLinkCount() {
@@ -195,30 +199,57 @@ public class FibonacciHeap
         int treeCounter = 0;
         // prepare children for insertion
         HeapNode child = this.min.child;
+        HeapNode inPlaceOfMin; // for use in updating start of list
         if (child != null) {
             for (HeapNode node : new IterableNode(child)) {
+                node.parent = null;
                 if (node.isMarked()) {
-                    node.parent = null;
                     unmarkCounter++;
                     node.unMark();
                 }
                 treeCounter++;
             }
             // insert child
-            addToStartOfTreeList(child);
+            addInsteadOfMin(child);
+            inPlaceOfMin = child;
+        } else{
+            HeapNode afterMin = this.min.next;
+            HeapNode beforeMin = this.min.prev;
+            beforeMin.next = afterMin;
+            afterMin.prev = beforeMin;
+            inPlaceOfMin = afterMin;
         }
         // remove min from the heap
         treeCounter--;
-        HeapNode afterMin = this.min.next;
-        HeapNode beforeMin = this.min.prev;
-        beforeMin.next = afterMin;
-        afterMin.prev = beforeMin;
+
         if (this.min == this.treeListStart){
-            this.treeListStart = afterMin;
+            if (size == 1) { // after deletion the tree is empty
+                this.treeListStart = null;
+            }
+            else {
+                this.treeListStart = inPlaceOfMin;
+            }
         }
         // update fields
         this.addToCounters(treeCounter, -1, -unmarkCounter);
     }
+
+    private void addInsteadOfMin(HeapNode startListToInsert) {
+        HeapNode endListToInsert = startListToInsert.prev;
+        HeapNode afterMin = this.min.next;
+        HeapNode beforeMin = this.min.prev;
+
+        if (afterMin == this.min){
+            this.treeListStart = startListToInsert;
+            return;
+        }
+
+        beforeMin.next = startListToInsert;
+        startListToInsert.prev = beforeMin;
+        endListToInsert.next = afterMin;
+        afterMin.prev = endListToInsert;
+    }
+
 
     /**
      * Consolidate trees in the heap until we have a binomial heap
@@ -226,6 +257,9 @@ public class FibonacciHeap
      * @post: updates treeListStart pointer
      */
     protected void consolidate(){
+        if (this.isEmpty()){
+            return;
+        }
         HeapNode[] buckets = new HeapNode[size+1];
 
         int linkCounter = 0;
@@ -361,7 +395,7 @@ public class FibonacciHeap
             this.min = heap2.min;
         }
 
-        this.addToStartOfTreeList(heap2.treeListStart);
+        this.addToEndOfTreeList(heap2.treeListStart);
         this.addToCounters(
                 heap2.getTreeCount(),
                 heap2.getSize(),
@@ -369,7 +403,29 @@ public class FibonacciHeap
     }
 
     /**
-     * Adds to the start of trees list
+     * Adds to the end of trees list
+     * @param startListToInsert node at the end of the new list (can be one long)
+     *                   Should have correct prev and next pointers
+     * @post: update treeListStart pointer
+     */
+    private void addToEndOfTreeList(HeapNode startListToInsert){
+        if (this.isEmpty()) {
+            this.treeListStart = startListToInsert;
+            return;
+        }
+        HeapNode startOrigin = this.treeListStart;
+        HeapNode lastOrigin = startOrigin.prev;
+        HeapNode lastListToInsert = startListToInsert.prev;
+
+        // concatenate
+        lastOrigin.next = startListToInsert;
+        startListToInsert.prev = lastOrigin;
+        lastListToInsert.next = startOrigin;
+        startOrigin.prev = lastListToInsert;
+    }
+
+    /**
+     Adds to the start of trees list
      * @param startListToInsert node at the start of the new list (can be one long)
      *                   Should have correct prev and next pointers
      * @post: update treeListStart pointer
@@ -439,12 +495,19 @@ public class FibonacciHeap
     public void delete(HeapNode x) {
         if (x == this.min) {
             this.deleteMin();
+            return;
         }
 
-    	HeapNode oldMin = this.min;
-        this.decreaseKey(x, x.key - oldMin.key + 1);
+        HeapNode oldMin = this.min;
+        if (oldMin.key == Integer.MIN_VALUE){
+            x.key = Integer.MIN_VALUE;
+            this.decreaseKey(x, 0);
+        } else {
+            this.decreaseKey(x, x.key - oldMin.key + 1);
+        }
         this.deleteMinAndDontFindNew();
         this.min = oldMin;
+        this.consolidate();
     }
 
    /**
@@ -463,16 +526,19 @@ public class FibonacciHeap
         int decreasedValue = x.key;
 
         if (x.getParent() == null) {
-            if (x.getKey() < this.min.getKey())
+            if (x.getKey() <= this.min.getKey())
                 this.min = x;
             return;
         }
 
-        if (x.getParent().getKey() <= x.getKey()) {
+        if (x.getParent().getKey() < x.getKey()) {
             return;
         }
 
-        x.mark = true;
+        if (!x.isMarked()){
+            x.mark = true;
+            markedCount++;
+        }
 
         //if we got here, we need to cut x.
         while(x.isMarked()) {
@@ -489,7 +555,7 @@ public class FibonacciHeap
 
 
         // update min.
-        if (decreasedValue < this.min.getKey()) {
+        if (decreasedValue <= this.min.getKey()) {
             min = keyToDecrease;
         }
 
@@ -519,10 +585,11 @@ public class FibonacciHeap
         x.next = x;
         x.prev = x;
 
-        x.prev = this.min.getPrev();
+        x.prev = this.treeListStart.getPrev();
         x.getPrev().next = x;
-        x.next = this.min;
-        this.min.prev = x;
+        x.next = this.treeListStart;
+        this.treeListStart.prev = x;
+        this.treeListStart = x;
 
         treeCount++;
         cutCount++;
@@ -673,11 +740,11 @@ public class FibonacciHeap
             int r = rightIndex(i);
             int smallest = i;
             HeapNode left = get(l);
-            if (l < size && left != null && left.key < get(smallest).key){
+            if (l <= size && left != null && left.key < get(smallest).key){
                 smallest = l; // left node is smaller
             }
             HeapNode right = get(r);
-            if (r < size && right != null && right.key < get(smallest).key){
+            if (r <= size && right != null && right.key < get(smallest).key){
                 smallest = r; // right node is smaller
             }
             if (smallest > i){
