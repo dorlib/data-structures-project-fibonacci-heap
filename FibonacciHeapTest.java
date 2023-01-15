@@ -5,8 +5,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.IntStream;
+
+
 
 class FibonacciHeapTest {
     Random random = new Random(69420);
@@ -330,7 +337,7 @@ class FibonacciHeapTest {
                 heap.insert(-large);
                 int[] itemsInHeap = randomInserts(i);
                 assertEquals(-large, heap.min.key);
-                assertEquals(-large, heap.findMin().key);
+                assertEquals(-large, heap.findNewMin().key);
             }
         }
     }
@@ -348,7 +355,7 @@ class FibonacciHeapTest {
                 int[] fromHeap = new int[i];
                 int delCount = 0;
                 for (int j = 0; j < i; j++) {
-                    fromHeap[j] = heap.treeListStart().key;
+                    fromHeap[j] = heap.findMin().key;
                     heap.deleteMin();
                     delCount++;
                     assertEquals(heap.size, i - delCount);
@@ -370,10 +377,10 @@ class FibonacciHeapTest {
             integerSet.add(555);
             var node = heap2.min;
             randomInserts(1000, integerSet);
-            assertEquals(0, heap.getCutCount());
+            assertEquals(0, FibonacciHeap.totalCuts());
             int oldTreeCount = heap.treeCount;
             heap.decreaseKey(node, 93185);
-            assertTrue(heap.getCutCount() > 0);
+            assertTrue(FibonacciHeap.totalCuts() > 0);
             assertEquals(oldTreeCount + 1, heap.treeCount);
         }
 
@@ -433,6 +440,166 @@ class FibonacciHeapTest {
                 assertNotSame(FibonacciHeap.IterableNode.class, item.getClass());
                 start = start.next;
             }
+        }
+    }
+
+    @Nested
+    class TheoreticalQuestions {
+        public static int binlog( int bits ) // returns 0 for bits=0
+        {
+            int log = 0;
+            if( ( bits & 0xffff0000 ) != 0 ) { bits >>>= 16; log = 16; }
+            if( bits >= 256 ) { bits >>>= 8; log += 8; }
+            if( bits >= 16  ) { bits >>>= 4; log += 4; }
+            if( bits >= 4   ) { bits >>>= 2; log += 2; }
+            return log + ( bits >>> 1 );
+        }
+
+        Map<Integer, FibonacciHeap.HeapNode> InsertAll(int[] arr) {
+            var items = new HashMap<Integer, FibonacciHeap.HeapNode>();
+            for (int i : arr){
+                items.put(i, heap.insert(i));
+            }
+            return items;
+        }
+        void decreaseKeysLogMTo1(BiFunction<Integer,Integer,Integer> keyToDecrease,
+                                 Map<Integer, FibonacciHeap.HeapNode> items, int m, boolean print) throws IOException{
+            if (print){
+                File file = new File("./result/", "%d before.txt".formatted(m));
+                file.createNewFile();
+                try (PrintStream stream = new PrintStream(file)) {
+                    HeapPrinter printer = new HeapPrinter(stream);
+                    printer.print(heap, false);
+                }
+            }
+            for (int i = binlog(m); i > 0 ; i--) {
+                int idx = keyToDecrease.apply(m,i);
+                heap.decreaseKey(items.get(idx), m + 1);
+                if (print){
+                    File file = new File("./result/", "%d, %d decrease %d.txt".formatted(m, i, idx));
+                    file.createNewFile();
+                    try (PrintStream stream = new PrintStream(file)) {
+                        HeapPrinter printer = new HeapPrinter(stream);
+                        printer.print(heap, false);
+                    }
+                }
+            }
+        }
+        @Test
+        void Q1Feel() throws IOException {
+            for (int m : new int[]{2,4,8,16}){
+                heap = new FibonacciHeap();
+                int[] arr = IntStream.range(-1, m).map(i -> m - i + - 2).toArray();
+                var items = InsertAll(arr);
+                heap.deleteMin();
+                decreaseKeysLogMTo1((z,i) -> z - (int)Math.pow(2,i) + 1,
+                        items, m, true);
+                heap.decreaseKey(items.get(m-2), m+1);
+                File file = new File("./result/", "%d, %s decrease %d.txt".formatted(m,"max",m-2));
+                file.createNewFile();
+                try (PrintStream stream = new PrintStream(file)) {
+                    HeapPrinter printer = new HeapPrinter(stream);
+                    printer.print(heap, false);
+                }
+            }
+        }
+
+
+        void Q1Measure(
+                BiFunction<Integer,Integer,Integer> keyToDecrease,
+                boolean isDeleteMin, boolean isDecAnotherKey, String modifier) throws IOException{
+            StringBuilder textForFile = new StringBuilder("|   m   | Runtime [ms] | totalLinks | totalCuts | Potential |");
+
+            if (isDecAnotherKey) {
+                textForFile.append(" Max cuts |");
+            }
+            textForFile.append("\n|_______|______________|____________|___________|___________|");
+            if (isDecAnotherKey) {
+                textForFile.append("__________|");
+            }
+            textForFile.append("\n");
+
+            for (int m : IntStream.range(1,5).map(i -> (int)Math.pow(2,5*i)).toArray()){
+                heap = new FibonacciHeap();
+                FibonacciHeap.linkCount = 0;
+                FibonacciHeap.cutCount = 0;
+                long startTime = System.nanoTime();
+
+                int[] arr = IntStream.range(-1, m).map(i -> m - i + - 2).toArray();
+                var items = InsertAll(arr);
+                if (isDeleteMin) {heap.deleteMin();}
+                decreaseKeysLogMTo1(keyToDecrease,items, m, false);
+                int maxCuts = 0;
+                if (isDecAnotherKey){
+                    maxCuts = FibonacciHeap.totalCuts();
+                    heap.decreaseKey(items.get(m-2), m+1);
+                    maxCuts = FibonacciHeap.totalCuts() - maxCuts;
+                }
+
+
+                long endTime = System.nanoTime();
+                textForFile.append("|")
+                        .append(String.format("%7d", m)).append("|")
+                        .append(String.format("%14.4f",(double) (endTime - startTime)/1000000)).append("|")
+                        .append(String.format("%12d", FibonacciHeap.totalLinks())).append("|")
+                        .append(String.format("%11d", FibonacciHeap.totalCuts())).append("|")
+                        .append(String.format("%11d", heap.potential())).append("|");
+                if (isDecAnotherKey) {
+                    textForFile.append(String.format("%10d", maxCuts)).append("|");
+                }
+                textForFile.append("\n");
+            }
+
+            FileWriter writer = new FileWriter(String.format("./result/runtime Q1 %s.txt", modifier));
+            writer.write(textForFile.toString());
+            writer.close();
+        }
+
+        @Test
+        void measureQ1b() throws IOException {
+            Q1Measure((z,i) -> z - (int)Math.pow(2,i) + 1, true, false, "B");
+        }
+
+        @Test
+        void measureQ1d() throws IOException {
+            Q1Measure((z,i) -> z - (int)Math.pow(2,i), true, false, "D");
+        }
+
+        @Test
+        void measureQ1e() throws IOException {
+            Q1Measure((z,i) -> z - (int)Math.pow(2,i) + 1, false, false, "E");
+        }
+
+        @Test
+        void measureQ1f() throws IOException {
+            Q1Measure((z,i) -> z - (int)Math.pow(2,i) + 1, true, true, "F");
+        }
+
+        @Test
+        void measureQ2() throws IOException {
+            StringBuilder textForFile = new StringBuilder("|   m   | Runtime [ms] | totalLinks | totalCuts | Potential |");
+            for (int m : Arrays.stream(new int[]{6,8,10,12,14})
+                            .map( x -> (int)Math.pow(3,x) - 1).toArray()) {
+
+                heap = new FibonacciHeap();
+                FibonacciHeap.linkCount = 0;
+                FibonacciHeap.cutCount = 0;
+                long startTime = System.nanoTime();
+                InsertAll(IntStream.range(0,m+1).toArray());
+                for (int i = 0; i < 3*m/4; i++) {
+                    heap.deleteMin();
+                }
+                long endTime = System.nanoTime();
+                textForFile.append("|")
+                        .append(String.format("%7d", m)).append("|")
+                        .append(String.format("%14.4f",(double) (endTime - startTime)/1000000)).append("|")
+                        .append(String.format("%12d", FibonacciHeap.totalLinks())).append("|")
+                        .append(String.format("%11d", FibonacciHeap.totalCuts())).append("|")
+                        .append(String.format("%11d", heap.potential())).append("|\n");
+            }
+            FileWriter writer = new FileWriter("./result/runtime Q2.txt");
+            writer.write(textForFile.toString());
+            writer.close();
         }
     }
 }
