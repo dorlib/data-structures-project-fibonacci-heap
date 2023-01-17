@@ -61,7 +61,13 @@ public class FibonacciHeap
         this(null, null, 0,0,0);
     }
 
-    public HeapNode treeListStart() {
+    /**
+     * public HeapNode findMin()
+     *
+     * Returns the node of the heap whose key is minimal, or null if the heap is empty.
+     *
+     */
+    public HeapNode findMin() {
         return this.min;
     }
 
@@ -77,13 +83,6 @@ public class FibonacciHeap
         return this.treeListStart;
     }
 
-    public int getLinkCount() {
-        return linkCount;
-    }
-
-    public int getCutCount() {
-        return cutCount;
-    }
 
     public int getMarkedCount() {
         return this.markedCount;
@@ -110,7 +109,7 @@ public class FibonacciHeap
     public HeapNode insert(int key) {
         // insert the created node to the heap if the heap is empty.
         if (this.isEmpty()) {
-            HeapNode newNode = this.createNode(key, 0, false, null, null, null, null);
+            HeapNode newNode = new HeapNode(key, 0, false, null, null, null, null);
             newNode.next = newNode;
             newNode.prev = newNode;
 
@@ -123,7 +122,7 @@ public class FibonacciHeap
         }
 
         // insert the created node to the heap if the heap is not empty.
-        HeapNode newNode = this.createNode(key, 0, false, null, null, null, null);
+        HeapNode newNode = new HeapNode(key, 0, false, null, null, null, null);
         this.treeListStart.prev.next = newNode;
         newNode.next = this.treeListStart;
         newNode.prev = this.treeListStart.getPrev();
@@ -136,37 +135,7 @@ public class FibonacciHeap
 
         return newNode;
     }
-
-    private void insertNode(HeapNode root) {
-        // insert the created node to the heap if the heap is empty.
-        if (this.isEmpty()) {
-            root.next = root;
-            root.prev = root;
-
-            this.min = root;
-            this.treeListStart = root;
-            this.size = 1;
-            this.treeCount = 1;
-
-            return;
-        }
-
-        // insert the created node to the heap if the heap is not empty.
-        this.treeListStart.prev.next = root;
-        this.treeListStart.prev = root;
-        this.treeListStart = root;
-
-        this.updateMin(root);
-        this.size++;
-        this.treeCount++;
-
-        return;
-    }
-
-    private HeapNode createNode(int key, int rank, boolean mark, HeapNode child, HeapNode parent, HeapNode next, HeapNode prev) {
-        return new HeapNode(key, rank, mark, child, parent, next, prev);
-    }
-
+    
     private void updateMin(HeapNode newNode) {
         if (newNode.key < this.min.key) {
             this.min = newNode;
@@ -182,7 +151,7 @@ public class FibonacciHeap
     */
     public void deleteMin() {
         deleteMinAndDontFindNew();
-        this.min = findMin();
+        this.min = findNewMin();
         consolidate();
     }
 
@@ -234,6 +203,11 @@ public class FibonacciHeap
         this.addToCounters(treeCounter, -1, -unmarkCounter);
     }
 
+    /**
+     * Inserts a sequence of HeapNodes instead of min
+     * @param startListToInsert the first node in the inserted sequence
+     * @post: min is not disconnected from heap list
+     */
     private void addInsteadOfMin(HeapNode startListToInsert) {
         HeapNode endListToInsert = startListToInsert.prev;
         HeapNode afterMin = this.min.next;
@@ -343,12 +317,10 @@ public class FibonacciHeap
 
 
    /**
-    * public HeapNode findMin()
-    *
-    * Returns the node of the heap whose key is minimal, or null if the heap is empty.
-    *
+    * Goes over the nodes in the heap and finds the one with minimal key.
+    * @return node with minimal key in the heap, or null if empty
     */
-    public HeapNode findMin() {
+    public HeapNode findNewMin() {
         if (this.isEmpty()){
             return null;
         }
@@ -363,9 +335,6 @@ public class FibonacciHeap
         return min;
     }
 
-    private void updateMin(){
-        this.min = findMin();
-    }
 
     /**
      * _INCREASES_ counter fields by the given values.
@@ -424,30 +393,6 @@ public class FibonacciHeap
         startOrigin.prev = lastListToInsert;
     }
 
-    /**
-     Adds to the start of trees list
-     * @param startListToInsert node at the start of the new list (can be one long)
-     *                   Should have correct prev and next pointers
-     * @post: update treeListStart pointer
-     */
-    private void addToStartOfTreeList(HeapNode startListToInsert){
-        if (this.isEmpty()) {
-            this.treeListStart = startListToInsert;
-            return;
-        }
-        HeapNode startOrigin = this.treeListStart;
-        HeapNode lastOrigin = startOrigin.prev;
-        HeapNode lastListToInsert = startListToInsert.prev;
-
-        // concatenate
-        startOrigin.prev = lastListToInsert;
-        lastListToInsert.next = startOrigin;
-        lastOrigin.next = startListToInsert;
-        startListToInsert.prev = lastOrigin;
-
-        // update pointer
-        this.treeListStart = startListToInsert;
-    }
 
    /**
     * public int size()
@@ -456,7 +401,7 @@ public class FibonacciHeap
     *   
     */
     public int size() {
-    	return this.size; // should be replaced by student code
+    	return this.size;
     }
     	
     /**
@@ -877,10 +822,10 @@ public class FibonacciHeap
             return this.prev;
         }
 
-        @Override
-        public String toString(){
-            return "(%d)".formatted(this.key);
-        }
+         @Override
+         public String toString(){
+             return "(%d)".formatted(this.key);
+         }
     }
 
     /**
@@ -897,6 +842,7 @@ public class FibonacciHeap
         public IterableNode(HeapNode node){
             start = node;
         }
+
         @Override
         public Iterator<HeapNode> iterator(){
             return new HeapNodeIteratorAsLinkedList(start);
