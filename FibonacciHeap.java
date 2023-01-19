@@ -605,16 +605,18 @@ public class FibonacciHeap
         if (H.isEmpty() || k == 0){
             return new int[]{};
         }
+        boolean should_insert = true;
         int[] minimalNodes = new int[k];
-        binomialHeap helper = new binomialHeap(H.size);
+        BinaryHeap helper = new BinaryHeap(H.size);
         helper.insert(H.min);
         for (int i = 0; i < k; i++) {
             HeapNode node = helper.getMin();
             minimalNodes[i] = node.key;
             helper.deleteMin();
-            if (node.child != null) {// insert all children on current min
-                for (HeapNode child : new IterableNode(node.child)) {
-                    helper.insert(child);
+            if (node.child != null && should_insert) {
+                helper.insertBunch(node.child);
+                if (helper.size >= 2*k){
+                    should_insert = false;
                 }
             }
         }
@@ -624,7 +626,7 @@ public class FibonacciHeap
     /**
      * helper class for kMin
      */
-    private static class binomialHeap {
+    private static class BinaryHeap {
         HeapNode[] heap;
         int size = 0;
 
@@ -632,7 +634,7 @@ public class FibonacciHeap
          * builds a new helper binomial heap for kMin
          * @param s maximum size of the heap
          */
-        private binomialHeap(int s){
+        private BinaryHeap(int s){
             heap = new HeapNode[s];
         }
 
@@ -647,6 +649,32 @@ public class FibonacciHeap
             size++;
             set(size, node);
             heapifyUp(size);
+        }
+
+        /**
+         * inserts node and all its next nodes, then heapify.
+         * @param node - candidate node to insert to heap
+         * @time O(n) where n is the final size of the heap
+         */
+        private void insertBunch(HeapNode node){
+            if (node == null){
+                return;
+            }
+            for (HeapNode bro : new IterableNode(node)){
+                size++;
+                set(size, bro);
+            }
+            this.heapify();
+        }
+
+        /**
+         * heapify down every node from the middle of the heap and up
+         * @time O(n)
+         */
+        private void heapify(){
+            for (int i = size/2; i > 0; i--) {
+                heapifyDown(i);
+            }
         }
 
         private void heapifyUp(int i){

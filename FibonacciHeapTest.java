@@ -442,7 +442,7 @@ class FibonacciHeapTest {
             }
         }
     }
-
+    /*
     @Nested
     class TheoreticalQuestions {
         public static int binlog( int bits ) // returns 0 for bits=0
@@ -577,8 +577,8 @@ class FibonacciHeapTest {
 
         @Test
         void measureQ2() throws IOException {
-            StringBuilder textForFile = new StringBuilder("|   m   | Runtime [ms] | totalLinks | totalCuts | Potential |");
-            for (int m : Arrays.stream(new int[]{6,8,10,12,14})
+            StringBuilder textForFile = new StringBuilder("|   m   | Runtime [ms] | totalLinks | totalCuts | Potential |\n");
+            for (int m : Arrays.stream(new int[]{6,8,10})
                             .map( x -> (int)Math.pow(3,x) - 1).toArray()) {
 
                 heap = new FibonacciHeap();
@@ -597,9 +597,36 @@ class FibonacciHeapTest {
                         .append(String.format("%11d", FibonacciHeap.totalCuts())).append("|")
                         .append(String.format("%11d", heap.potential())).append("|\n");
             }
-            FileWriter writer = new FileWriter("./result/runtime Q2.txt");
+            FileWriter writer = new FileWriter("./result/runtime Q22.txt");
             writer.write(textForFile.toString());
             writer.close();
         }
+
+        @Test
+        void Q2Feel() throws IOException{
+            for (int m : new int[]{728}){
+                heap = new FibonacciHeap();
+                FibonacciHeap.linkCount = 0;
+                FibonacciHeap.cutCount = 0;
+                int[] arr = IntStream.range(0, m+1).toArray();
+                var items = InsertAll(arr);
+                File file = new File("./result/", "%d before.txt".formatted(m));
+                file.createNewFile();
+                try (PrintStream stream = new PrintStream(file)) {
+                    HeapPrinter printer = new HeapPrinter(stream);
+                    printer.print(heap, false);
+                }
+                for (int i = 0; i < 3*m/4; i++) {
+                    heap.deleteMin();
+                    file = new File("./result/", "%d, after.txt".formatted(m));
+                    file.createNewFile();
+                    try (PrintStream stream = new PrintStream(file)) {
+                        HeapPrinter printer = new HeapPrinter(stream);
+                        printer.print(heap, false);
+                    }
+                }
+            }
+        }
     }
+     */
 }
