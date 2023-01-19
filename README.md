@@ -40,11 +40,11 @@ Fibonacci Heap include the implementation of the Heap's functionality and the me
 | insert(int i)                  | Inserts to the heap new heap node with the key i and returns the new heap node.                         | O(1)            |
 | deleteMin()                    | Removes the node with the minimal key from the heap.                                                    | O(log(n))       |
 | findMin()                      | Returns the node with the minimal key from the heap.                                                    | O(log(n))       |
-| meld(FibonacciHeap heap2)      | Melds heap2 with the current heap.                                                                      |                 |
+| meld(FibonacciHeap heap2)      | Melds heap2 with the current heap.                                                                      | O(1)            |
 | size()                         | Returns the size of the heap.                                                                           | O(1)            |
-| counterRep()                   | Returns an array where the i'th element represents the num of trees in the heap which their rank is i.  |                 |
+| counterRep()                   | Returns an array where the i'th element represents the num of trees in the heap which their rank is i.  | O(n)            |
 | delete(HeapNode x)             | Deletes x from the heap.                                                                                |                 | 
-| decreaseKey(HeapNode x, int d) | Decreases the key of x by d.                                                                            |                 |
+| decreaseKey(HeapNode x, int d) | Decreases the key of x by d.                                                                            | O(log(n))       |
 | nonMarked()                    | Returns the number of nodes in the heap which are not marked.                                           | O(1)            |
 | potential(lst)                 | Returns the current potential of the heap which we calculate by num of trees + 2 * num of marked nodes. | O(1)            |
 | totalLinks()                   | Static function which returns the sum of links done while the app is running.                           | O(1)            |
