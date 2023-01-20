@@ -43,7 +43,7 @@ Fibonacci Heap include the implementation of the Heap's functionality and the me
 | meld(FibonacciHeap heap2)      | Melds heap2 with the current heap.                                                                      | O(1)            |
 | size()                         | Returns the size of the heap.                                                                           | O(1)            |
 | counterRep()                   | Returns an array where the i'th element represents the num of trees in the heap which their rank is i.  | O(n)            |
-| delete(HeapNode x)             | Deletes x from the heap.                                                                                |                 | 
+| delete(HeapNode x)             | Deletes x from the heap.                                                                                | O(n)            | 
 | decreaseKey(HeapNode x, int d) | Decreases the key of x by d.                                                                            | O(log(n))       |
 | nonMarked()                    | Returns the number of nodes in the heap which are not marked.                                           | O(1)            |
 | potential(lst)                 | Returns the current potential of the heap which we calculate by num of trees + 2 * num of marked nodes. | O(1)            |
