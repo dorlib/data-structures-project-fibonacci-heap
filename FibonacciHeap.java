@@ -171,7 +171,7 @@ public class FibonacciHeap
     * @- Deletes the node containing the minimum key.
     * @post: update minimum pointer
     * @post: heap is consolidated to a binomial heap
-    * @time complexity: O(log(n))
+    * @time complexity: O(n)
     */
     public void deleteMin() {
         deleteMinAndDontFindNew();
@@ -440,7 +440,7 @@ public class FibonacciHeap
     *
     * Return an array of counters. The i-th entry contains the number of trees of order i in the heap.
     * (Note: The size of the array depends on the maximum order of a tree.)
-    * @time complexity: O(1)
+    * @time complexity: O(n)
     */
     public int[] countersRep() {
         if (this.isEmpty()){
