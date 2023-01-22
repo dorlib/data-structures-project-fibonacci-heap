@@ -255,7 +255,7 @@ public class FibonacciHeap
      * Consolidate trees in the heap until we have a binomial heap
      * @post: updates tree count and link count
      * @post: updates treeListStart pointer
-     * @time complexity: O(log(n))
+     * @time complexity: O(n)
      */
     protected void consolidate(){
         if (this.isEmpty()){
