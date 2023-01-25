@@ -1,7 +1,7 @@
 # data-stractures-project-fibonacci-heap
 
 This is the second programming project in data structures course. </br>
-In this project we will implement a fibonacci heap. </br>
+In this project we will implement a fibonacci heap using java. </br>
 
 - [Heap Node class](#Heap-Node-Class)
     - [functions & time complexity table](#Heap-Node-functions-&-time-complexity)
