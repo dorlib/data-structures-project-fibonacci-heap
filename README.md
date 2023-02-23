@@ -3,6 +3,8 @@
 This is the second programming project in data structures course. </br>
 In this project we will implement a fibonacci heap using java. </br>
 
+#### Grade: 100
+
 - [Heap Node class](#Heap-Node-Class)
     - [functions & time complexity table](#Heap-Node-functions-&-time-complexity)
 - [Fibonacci Heap class](#Fibonacci-Heap-Class)
